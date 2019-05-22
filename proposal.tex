@@ -1,0 +1,169 @@
+\documentclass[12pt,a4paper]{article}
+% The following LaTeX packages must be installed on your machine: amsmath, authblk, bm, booktabs, caption, dcolumn, fancyhdr, geometry, graphicx, hyperref, latexsym, natbib
+\input{185.dat}
+\usepackage{gensymb}
+\usepackage{amsthm}
+\usepackage{float}
+\usepackage{siunitx}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{mathtools}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+\usepackage[none]{hyphenat}
+\usepackage{physics}
+\newcommand\ddfrac[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+%\renewcommand{\familydefault}{\sfdefault}
+
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+\vspace*{\fill}
+
+\Huge{ App Physics 185 \\
+Capstone Project
+} \\
+
+\qquad
+\qquad
+
+\normalsize{Kenneth V. Domingo \\
+Rhei Joven G. Juan \\
+Rene L. Principe Jr.
+}
+
+\vspace*{\fill}
+\end{center}
+\end{titlepage}
+
+\setcounter{page}{1}
+
+\section*{Week of 6 May 2019: Update 1}
+\medskip
+
+\subsection*{Materials}
+\begin{table}[h!]
+	\centering
+	\caption{Items required and expenses so far.}
+	\begin{tabular}{cccc}
+	Quantity & Item & Cost/pc (PhP) & Subtotal (PhP) \\ \hline
+	1 & Velostat sheet & 349.00 & 349.00 \\
+	1 & Heltec ESP32 LoRa Microcontroller & 0.00$^*$ & 0.00 \\
+	1 & Aluminum tape & 0.00$^{**}$ & 0.00 \\
+	& & \textbf{TOTAL} & 349.00 \\
+	& $_{^*\textit{provided by Dr. Tapang}}$ & & \\
+	& $_{^{**}\textit{stock available in lab}}$ & &
+	\end{tabular}
+\end{table}
+
+\subsection*{Tasks accomplished}
+\begin{itemize}
+	\item Familiarized ourselves with how to construct a sensor based on velostat pressure sheets
+	\item Refreshed our knowledge of programming in C++ (for Arduino)
+	\item Downloaded and installed drivers specific to the microcontroller and familiarized ourselves with its pinout
+	\item Were able to construct a basic velostat sensor and display its analog input reading both on the serial monitor and the microcontroller LED
+\end{itemize}
+
+\subsection*{Results}
+\begin{itemize}
+	\item Analog input of microcontroller $\in [0, 4095]$ \texttt{int}
+	\item Readings were scaled such that the range $\in [0, 5]$ V \texttt{float}
+	\item Maximum reading is obtained when there is no applied pressure, reading decreases as pressure is increased
+	\item Continuous serial plot shows a constant value when no pressure is applied, but changing the pressure shows that the analog reading is not continuous when pressure is applied: the reading constantly jumps between a certain value corresponding to the pressure and the maximum value, i.e. applying a constant force on the sheet at rest does not produce an expected step function, but rather, uneven spikes
+\end{itemize}
+
+\subsection*{Up next}
+\begin{itemize}
+	\item Find a way to stabilize pressure readings to get a proper constant reading when applying constant pressure
+	\item Develop code for recognition of type of motion based on the appearance of voltage vs time graph by evaluating it for every time period $\tau$
+	\item Attempt to calculate time of flight based on voltage vs time graph
+\end{itemize}
+
+\lstset{
+	basicstyle=\footnotesize\ttfamily,
+	language=C++,
+	tabsize=4,
+	numbers=left,
+	numberstyle=\tiny\ttfamily,
+	caption={Inital code for familiarization of microcontroller.},
+	label=list:source
+}
+\begin{lstlisting}
+#include <heltec.h>
+
+float Vin = 0;
+float Vscaled = 0;
+int READPIN = 0;
+
+void setup() {
+	Serial.begin(9600);
+	Heltec.begin(true, false, true);
+	Heltec.display->flipScreenVertically();
+	Heltec.display->setFont(ArialMT_Plain_16);
+	pinMode(READPIN, INPUT);
+}
+
+void loop() {
+	Heltec.display->clear();
+	Vin = analogRead(READPIN);
+	Vscaled = Vin/4095. * 5.;
+	Serial.println(Vin);
+	Heltec.display->drawString(0, 10, String(Vscaled));
+	Heltec.display->display();
+}
+\end{lstlisting}
+
+
+\clearpage
+
+\section*{Week of 29 April 2019: Proposal}
+\medskip
+
+\subsection*{Objectives}
+\begin{itemize}
+	\item To be able to detect the force exerted by various locations on a person's foot.
+	\item To be able to characterize, based on the force vs time graph, whether a person is standing, walking, running, or jumping.
+	\item To be able to characterize the sport being played based on the force vs time graph.
+\end{itemize}
+
+\subsection*{Materials \& Methodology}
+
+\begin{table}[h!]
+	\centering
+	\caption{Estimated cost of materials.}
+	\begin{tabular}{cccc}
+	Quantity & Item & Cost/pc (PhP) & Subtotal (PhP) \\ \hline
+	1 & Pressure-sensitive conductive velostat sheet & 349.00 & 349.00 \\
+	1 & ESP8266 WiFi Microcontroller & 325.00 & 325.00 \\
+	2 & 9V Battery & 79.00 & 158.00 \\
+	& & \textbf{TOTAL} & 832.00
+	\end{tabular}
+\end{table}
+
+\begin{enumerate}
+	\item Pieces of the velostat sheet are attached to 3 locations on the insole of a shoe. 
+	\item The velostat is attached to the microcontroller for real-time data acquisition.
+	\item Voltage vs. force calibration was done by applying different values of force to the velostat sheet.
+	\item A force vs. time is plotted in real-time for different motions.
+	\item A characterization of the different motions was done using the frequencies and magnitudes obtained from the force vs. time plot.
+\end{enumerate}
+
+\subsection*{Predicted Results}
+Characterization of different motions:
+\begin{itemize}
+	\item \textbf{Standing} - constant force observed over time
+	\item \textbf{Walking} - a cascading motion from the three sensors will be observed
+	\item \textbf{Running} - same as walking but with higher frequency
+	\item \textbf{Jumping} - two sets of impulse will be observed from the take-off and landing.
+\end{itemize}
+
+\subsection*{Validation Scheme}
+\begin{itemize}
+	\item Compare the obtained force value from the sensor with the calculated calibration equation/curve, for standing motion.
+	\item Through real-time analysis, compare a video of the motions to their force vs. time plot.
+\end{itemize}
+
+\end{document}
